@@ -281,3 +281,5 @@ WHERE
 8) Documentar los cambios realizados:
 	El paso a paso fue documentado.
 */
+
+select * from animerank
