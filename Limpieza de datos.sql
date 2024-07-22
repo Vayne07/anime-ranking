@@ -11,7 +11,7 @@
 
 
 2) VALORES NULOS EN "SOURCE":
-	teniendo en cuenta la siguiente consulta tome la decision de no cambiar estos NULLS (32%).
+	teniendo en cuenta la siguiente consulta, decidi cambiar estos NULLS (32%) a "Unknown".
 */
 
 SELECT 
@@ -31,9 +31,18 @@ ORDER BY
 	porcentaje DESC
 
 
+
+UPDATE
+	animerank
+SET
+	source = 'Unknown'
+WHERE
+	source IS NULL
+
+
 /*
 2) VALORES NULOS EN "GENRES":
-	teniendo en cuenta la siguiente consulta tome la decision de no cambiar estos NULLS (23%).
+	teniendo en cuenta la siguiente consulta, decidi cambiar estos NULLS (23%) a "Unknown".
 */
 
 SELECT 
@@ -51,6 +60,18 @@ FROM
         genres) AS t1
 ORDER BY
 	porcentaje DESC
+
+
+
+UPDATE
+	animerank
+SET
+	genres = 'Unknown'
+WHERE
+	genres IS NULL
+
+
+
 
 /*
 2) VALORES NULOS EN "PREMIERED" Y "BROADCAST" Y NORMALIZACION DE "AIRED":
@@ -136,13 +157,91 @@ WHERE
 	broadcast IS NULL OR broadcast LIKE 'Unknown'
 
 
+
+/*
+2) VALORES NULOS EN "EPISODES":
+	Estos valores nulos se encuentran en los anime que no han finalizado, pero tampoco se sabe cuantos capitulos van a contener.
+	Al ser solo 7 datos, decidi buscarlos manualmente.
+*/
+
+UPDATE
+	animerank
+SET
+	episodes = CASE
+					WHEN name = 'One Piece' THEN 1112
+					WHEN name = 'Kimetsu no Yaiba: Hashira Geiko-hen' THEN 8
+					WHEN name = 'Meitantei Conan' THEN 1118
+					WHEN name = 'Crayon Shin-chan' THEN 1203
+					WHEN name = 'Doraemon (2005)' THEN 1787
+					WHEN name = 'Idol Land PriPara' THEN 12
+					WHEN name = 'Bartender: Kami no Glass' THEN 11
+				END
+WHERE
+	episodes IS NULL
+
+
+
+/*
+2) HAY UN REGISTRO CON MUCHOS VALORES NULOS, DECIDI ELIMINARLO.
+*/
+
+DELETE FROM
+	animerank
+WHERE
+	name = 'Katekyou Hitman Reborn! Vongola Family Soutoujou! Vongola Shiki Shuugakuryokou, Kuru!!'
+
+
+/*
+2) VALORES NULOS EN EL NUEVO CAMPO "FINISHED_DATE":
+	decidi usar una fecha ficticia para imputar estos valores.
+*/
+
+UPDATE
+	animerank
+SET
+	finished_date = '9999-12-31'
+WHERE finished_date IS NULL
+
+
 /*
 3) Detectar y corregir errores de entrada:
 	No considero que haya errores de entrada para corregir.
 
 4) Estandarizar formatos de datos:
 	Ya realice una normalizacion en el campo inicial "aired" y luego cambie el tipo de dato a DATE.
+	Ahora cambio el campo "SCORE" a un valor decimal, ya que es el promedio de los puntajes del 1 al 10.
+*/
 
+ALTER TABLE
+	animerank
+ALTER COLUMN
+	score FLOAT
+
+UPDATE
+	animerank
+SET
+	score = score / 100
+
+-- Campos "Ranked" y "Popularity" les voy a retirar el "#" y luego cambiar el campo a tipo numerico.
+
+UPDATE
+	animerank
+SET
+	ranked = REPLACE(ranked, '#', ''),
+	popularity = REPLACE(popularity, '#', '')
+
+ALTER TABLE
+	animerank
+ALTER COLUMN
+	ranked INT
+
+ALTER TABLE
+	animerank
+ALTER COLUMN
+	popularity INT
+
+
+/*
 5) Resolver inconsistencias y redundancias:
 	No considero que haya incosistencias y redundancias para resolver.
 */
