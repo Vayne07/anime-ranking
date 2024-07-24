@@ -258,21 +258,39 @@ GROUP BY
 ORDER BY
 	cnt DESC
 
--- reviso en detalle el primer duplicado, falsa alarma.
+-- reviso en detalle el primer duplicado y lo modifico para luego agregar la Constraint.
 SELECT
 	*
 FROM
 	animerank
 WHERE
-	name LIKE '%gintama%'
+	name = 'gintama'
 
--- reviso en detalle el segundo duplicado, falsa alarma.
+
+UPDATE
+	animerank
+SET
+	name = 'gintama*'
+WHERE
+	ID = 7
+
+-- reviso en detalle el segundo duplicado y lo modifico para luego agregar la Constraint.
 SELECT
 	*
 FROM
 	animerank
 WHERE
 	name LIKE '%working%'
+
+
+UPDATE
+	animerank
+SET
+	name = 'working!'
+WHERE
+	ID = 1278
+
+
 
 /*
 7) Validar la integridad referencial:
