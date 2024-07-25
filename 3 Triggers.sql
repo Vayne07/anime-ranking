@@ -249,7 +249,7 @@ SET
 	type = 'OVA',
 	episodes = 1
 WHERE
-	ID = 2024
+	ID = 2023
 
 
 SELECT
@@ -325,7 +325,7 @@ Hago la prueba eliminando valores de ejemplo y funciona.
 DELETE FROM
 	animerank
 WHERE
-	ID = 2025
+	ID = 2023
 
 SELECT
 	*
