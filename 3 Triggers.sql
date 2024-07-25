@@ -1,9 +1,6 @@
 /*
 Creo una tabla de auditoria, para registrar los cambios en la base de datos.
 */
-
-select * from animerank
-
 CREATE TABLE 
 	Auditoria (
 		ID INT PRIMARY KEY IDENTITY (1, 1),
@@ -37,10 +34,12 @@ CREATE TABLE
 Creo los triggers para las tres distintas opciones INSERT, UPDATE, DELETE.
 */
 
-CREATE TRIGGER TR_insert ON animerank
+--	INSERT
+CREATE OR ALTER TRIGGER TR_insert ON animerank
 AFTER INSERT
 AS
 BEGIN
+	SET NOCOUNT ON
 	DECLARE 
 		@usuario VARCHAR(100) = SUSER_NAME(),
 		@app VARCHAR(100) = APP_NAME()
@@ -92,8 +91,247 @@ BEGIN
         favorites,
         aired_date,
         finished_date
-    FROM inserted -- borre "i", si no funciona agregar de nuevo, a los campos tambien (alias).
+    FROM inserted
 END
+
+/*
+Hago la prueba ingresando valores de ejemplo y funciona.
+*/
+
+INSERT INTO animerank VALUES
+	('anime ejemplo',
+	'type',
+	12, 
+	'status',
+	'premiered', 
+	'broadcast', 
+	'producers',
+	'licensors',
+	'studios', 
+	'source',
+	'genres',
+	'1hs',
+	'+13',
+	10,
+	3000,
+	1,
+	1,
+	'2024-04-27',
+	'2024-01-01')
+
+SELECT
+	*
+FROM
+	Auditoria
+
+
+
+--	UPDATE.
+CREATE OR ALTER TRIGGER TR_update ON animerank
+AFTER UPDATE
+AS
+BEGIN
+	SET NOCOUNT ON
+	DECLARE 
+		@usuario VARCHAR(100) = SUSER_NAME(),
+		@app VARCHAR(100) = APP_NAME()
+	INSERT INTO Auditoria(	Tipo,
+							Usuario,
+							Aplicacion,
+							AnimeID,
+							Name,
+							Type,
+							Episodes,
+							Status,
+							Premiered,
+							Broadcast,
+							Producers,
+							Licensors,
+							Studios,
+							Source, 
+							Genres, 
+							Duration, 
+							Rating, 
+							Score, 
+							Ranked, 
+							Popularity, 
+							Favorites,
+							Aired_Date, 
+							Finished_Date
+						)
+	SELECT
+		'U',
+        @usuario,
+        @app,
+        id,
+        name,
+        type,
+        episodes,
+        status,
+        premiered,
+        broadcast,
+        producers,
+        licensors,
+        studios,
+        source,
+        genres,
+        duration,
+        rating,
+        score,
+        ranked,
+        popularity,
+        favorites,
+        aired_date,
+        finished_date
+    FROM deleted
+
+
+	INSERT INTO Auditoria(	Tipo,
+							Usuario,
+							Aplicacion,
+							AnimeID,
+							Name,
+							Type,
+							Episodes,
+							Status,
+							Premiered,
+							Broadcast,
+							Producers,
+							Licensors,
+							Studios,
+							Source, 
+							Genres, 
+							Duration, 
+							Rating, 
+							Score, 
+							Ranked, 
+							Popularity, 
+							Favorites,
+							Aired_Date, 
+							Finished_Date
+						)
+	SELECT
+		'U',
+        @usuario,
+        @app,
+        id,
+        name,
+        type,
+        episodes,
+        status,
+        premiered,
+        broadcast,
+        producers,
+        licensors,
+        studios,
+        source,
+        genres,
+        duration,
+        rating,
+        score,
+        ranked,
+        popularity,
+        favorites,
+        aired_date,
+        finished_date
+    FROM inserted
+END
+
+
+/*
+Hago la prueba actualizando valores de ejemplo y funciona.
+*/
+
+UPDATE
+	animerank
+SET
+	name = 'actualizacion',
+	type = 'OVA',
+	episodes = 1
+WHERE
+	ID = 2024
+
+
+SELECT
+	*
+FROM
+	Auditoria
+
+
+-- DELETE
+CREATE OR ALTER TRIGGER TR_delete ON animerank
+AFTER DELETE
+AS
+BEGIN
+	SET NOCOUNT ON
+	DECLARE 
+		@usuario VARCHAR(100) = SUSER_NAME(),
+		@app VARCHAR(100) = APP_NAME()
+	INSERT INTO Auditoria(	Tipo,
+							Usuario,
+							Aplicacion,
+							AnimeID,
+							Name,
+							Type,
+							Episodes,
+							Status,
+							Premiered,
+							Broadcast,
+							Producers,
+							Licensors,
+							Studios,
+							Source, 
+							Genres, 
+							Duration, 
+							Rating, 
+							Score, 
+							Ranked, 
+							Popularity, 
+							Favorites,
+							Aired_Date, 
+							Finished_Date
+						)
+	SELECT
+		'D',
+        @usuario,
+        @app,
+        id,
+        name,
+        type,
+        episodes,
+        status,
+        premiered,
+        broadcast,
+        producers,
+        licensors,
+        studios,
+        source,
+        genres,
+        duration,
+        rating,
+        score,
+        ranked,
+        popularity,
+        favorites,
+        aired_date,
+        finished_date
+    FROM deleted
+END
+
+/*
+Hago la prueba eliminando valores de ejemplo y funciona.
+*/
+
+DELETE FROM
+	animerank
+WHERE
+	ID = 2025
+
+SELECT
+	*
+FROM
+	Auditoria
+
 
 
 
