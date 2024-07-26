@@ -335,26 +335,102 @@ FROM
 
 
 
+
 /*
 Triggers para Validacion y Normalizacion.
-EJEMPLO: puedo hacer una mini limpieza de datos con estos triggers.
-CREATE TRIGGER NormalizeDataTrigger
-ON AnimeTable
+pequeña limpieza de datos para los valores que van ingresando.
+cada campo va a manejar cuestiones como eliminacion de espacios, valores nulos, capitalzaciones y correcciones de fechas.
+*/
+CREATE OR ALTER TRIGGER TR_limpieza ON animerank
 AFTER INSERT, UPDATE
 AS
 BEGIN
-    SET NOCOUNT ON;
+    SET NOCOUNT ON
     
-    UPDATE AnimeTable
+    UPDATE
+		animerank
     SET
-        title = UPPER(title), -- Normalización a mayúsculas
-        episodes = ISNULL(episodes, 0), -- Sustitución de NULL por 0
-        finished_date = ISNULL(finished_date, '1900-01-01') -- Sustitución de NULL por una fecha por defecto
-    WHERE id IN (SELECT id FROM inserted);
-END;
-*/
+        name =	CASE 
+					WHEN TRIM(name) = '' OR name IS NULL THEN 'Unknown'
+					ELSE UPPER(LEFT(TRIM(REPLACE(name, '  ', ' ')), 1)) + RIGHT(TRIM(REPLACE(name, '  ', ' ')), LEN(TRIM(REPLACE(name, '  ', ' ')))-1)
+				END,
 
+		type =	CASE
+					WHEN TRIM(type) = '' OR type IS NULL THEN 'Unknown'
+					ELSE TRIM(type)
+				END,
 
+		episodes = ISNULL(episodes, 0),
+
+		status = TRIM(status),
+
+		premiered =	CASE
+						WHEN TRIM(premiered) = '' OR premiered IS NULL THEN 'Unknown'
+						ELSE TRIM(premiered)
+					END,
+
+		broadcast =	CASE
+						WHEN TRIM(broadcast) = '' OR broadcast IS NULL THEN 'Unknown'
+						ELSE TRIM(broadcast)
+					END,
+
+		source =	CASE
+						WHEN TRIM(source) = '' OR source IS NULL THEN 'Unknown'
+						ELSE TRIM(source)
+					END,
+
+		genres =	CASE
+						WHEN TRIM(genres) = '' OR genres IS NULL THEN 'Unknown'
+						ELSE TRIM(genres)
+					END,
+
+		duration = TRIM(duration),
+
+		rating = TRIM (rating),
+
+		score = ISNULL(score, 0),
+
+		ranked = ISNULL(ranked, 0),
+
+		popularity = ISNULL(popularity, 0),
+
+		aired_date =	CASE
+							WHEN aired_date IS NULL THEN '1900-01-01'
+							WHEN aired_date > CAST(GETDATE() AS DATE) THEN CAST(GETDATE() AS DATE)
+							ELSE aired_date
+						END,
+
+		finished_date = CASE
+							WHEN finished_date IS NULL THEN '9999-12-31'
+							WHEN finished_date > CAST(GETDATE() AS DATE) THEN CAST(GETDATE() AS DATE)
+						END
+    WHERE id IN (SELECT id FROM inserted)
+END
+
+-- INSERTO VALORES DE PRUEBA, CORROBORO Y TODO FUNCIONA OK.
+
+INSERT INTO animerank
+VALUES('ejemplo  de  nombre',
+		'', 
+		NULL,
+		'Currently Airing',
+		'    Fall 2023      ',
+		'',
+		'asd',
+		'asd',
+		'asd',
+		'manga',
+		null,
+		'00:20',
+		'+18',
+		null,
+		null,
+		null,
+		5,
+		null,
+		'2025-02-02')
+	
+SELECT * FROM animerank
 
 /*
 Implementación de Logs de Errores.
