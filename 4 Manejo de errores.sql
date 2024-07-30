@@ -131,15 +131,3 @@ EXEC SP_InsertarUno
 					@Finished_Date = '2020-08-07'
 					
 SELECT * FROM RegistroErrores
-
-
-/*	
-Implementación de Funciones:
-EJEMPLO: calcula la duracion del anime.
-CREATE FUNCTION dbo.CalculateAnimeDuration (@PremieredDate DATE, @FinishedDate DATE)
-RETURNS INT
-AS
-BEGIN
-    RETURN DATEDIFF(DAY, @PremieredDate, @FinishedDate);
-END;
-*/
