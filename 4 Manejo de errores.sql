@@ -1,99 +1,137 @@
-
-
-
 /*
-Tabla de auditoria.
-
-CREATE TABLE AnimeAudit (
-    AuditID INT IDENTITY(1,1) PRIMARY KEY,
-    AuditType CHAR(1), -- I = Insert, U = Update, D = Delete
-    AuditDate DATETIME DEFAULT GETDATE(),
-    AnimeID INT,
-    OldTitle VARCHAR(100),
-    NewTitle VARCHAR(100),
-    OldEpisodes INT,
-    NewEpisodes INT,
-    OldPremieredDate DATE,
-    NewPremieredDate DATE,
-    OldFinishedDate DATE,
-    NewFinishedDate DATE
-);
-
-*/
-
-
-
-
-/*
-Implementación de Logs de Errores.
+Implementacion de Logs de Errores.
 EJEMPLO: crear tabla para registrar los errores para su posterior analisis.
-CREATE TABLE ErrorLog (
-    LogID INT IDENTITY(1,1) PRIMARY KEY,
-    ErrorMessage NVARCHAR(4000),
-    ErrorNumber INT,
-    ErrorSeverity INT,
-    ErrorState INT,
-    ErrorProcedure NVARCHAR(128),
-    ErrorLine INT,
-    LogDate DATETIME DEFAULT GETDATE()
-);
-
 */
+CREATE TABLE RegistroErrores 
+	(
+	ID INT IDENTITY(1,1) PRIMARY KEY,
+    Error NVARCHAR(4000),
+    Numero INT,
+    Severidad INT,
+    Estado INT,
+    Procedimiento NVARCHAR(128),
+    Linea INT,
+    Fecha DATETIME DEFAULT GETDATE()
+	)
+
 
 
 /*
-Validación y Restricciones en Datos Nuevos.
-EJEMPLO: me aseguro que los datos que ingresan son correctos, de no ser asi devuelve un error descriptivo
-
-CREATE PROCEDURE InsertAnimeData
-    @Title VARCHAR(100),
-    @Episodes INT,
-    @PremieredDate DATE,
-    @FinishedDate DATE
+Ingreso de Datos controlado (uno por uno).
+creo un SP para cuando deba ingresar de a un registro, con manejo de errores incluido.
+*/
+CREATE PROC SP_InsertarUno
+    @Name VARCHAR(255),
+	@Type NVARCHAR(50),
+    @Episodes SMALLINT,
+	@Status VARCHAR(50),
+	@Premiered VARCHAR(50),
+	@Broadcast VARCHAR(50),
+	@Producers VARCHAR(255),
+	@Licensors VARCHAR(255),
+	@Studios VARCHAR(255),
+	@Source VARCHAR(50),
+	@Genres VARCHAR(255),
+	@Duration VARCHAR(50),
+	@Rating VARCHAR(50),
+	@Score FLOAT,
+	@Ranked INT,
+	@Popularity INT,
+	@Favorites INT,
+	@Aired_Date DATE,
+	@Finished_Date DATE
 AS
 BEGIN
     BEGIN TRY
-        BEGIN TRANSACTION;
-        
-        -- Validaciones
-        IF @Episodes < 0
-        BEGIN
-            THROW 50000, 'El número de episodios no puede ser negativo.', 1;
-        END
+        BEGIN TRANSACTION
+			IF @Episodes < 0
+				BEGIN
+					THROW 50000, 'El numero de episodios no puede ser negativo.', 1
+				END
+			INSERT INTO animerank(
+									Name,
+									Type,
+									Episodes,
+									Status,
+									Premiered,
+									Broadcast,
+									Producers,
+									Licensors,
+									Studios,
+									Source, 
+									Genres, 
+									Duration, 
+									Rating, 
+									Score, 
+									Ranked, 
+									Popularity, 
+									Favorites,
+									Aired_Date, 
+									Finished_Date
+									)
 
-        -- Inserción de datos
-        INSERT INTO AnimeTable (title, episodes, premiered_date, finished_date)
-        VALUES (@Title, @Episodes, @PremieredDate, @FinishedDate);
+			VALUES (
+					@Name,
+					@Type,
+					@Episodes,
+					@Status,
+					@Premiered,
+					@Broadcast,
+					@Producers,
+					@Licensors,
+					@Studios,
+					@Source,
+					@Genres,
+					@Duration,
+					@Rating,
+					@Score,
+					@Ranked,
+					@Popularity,
+					@Favorites,
+					@Aired_Date,
+					@Finished_Date
+					)
         
-        COMMIT TRANSACTION;
+        COMMIT TRANSACTION
     END TRY
     BEGIN CATCH
-        ROLLBACK TRANSACTION;
-        -- Manejo de errores
-        THROW;
+        ROLLBACK TRANSACTION
+		BEGIN
+			INSERT INTO RegistroErrores (Error, Numero, Severidad, Estado, Procedimiento, Linea)
+				VALUES (ERROR_MESSAGE(), ERROR_NUMBER(), ERROR_SEVERITY(), ERROR_STATE(), ERROR_PROCEDURE(), ERROR_LINE());
+				THROW
+		END
     END CATCH
-END;
+END
 
-*/
 
 /*
-Triggers para Validación y Normalización.
-EJEMPLO: puedo hacer una mini limpieza de datos con estos triggers.
-CREATE TRIGGER NormalizeDataTrigger
-ON AnimeTable
-AFTER INSERT, UPDATE
-AS
-BEGIN
-    SET NOCOUNT ON;
-    
-    UPDATE AnimeTable
-    SET
-        title = UPPER(title), -- Normalización a mayúsculas
-        episodes = ISNULL(episodes, 0), -- Sustitución de NULL por 0
-        finished_date = ISNULL(finished_date, '1900-01-01') -- Sustitución de NULL por una fecha por defecto
-    WHERE id IN (SELECT id FROM inserted);
-END;
+Probamos el SP agregando un registro con error, voy cambiando valores para hacer distintas pruebas.
 */
+
+EXEC SP_InsertarUno
+					@Name = 'Ejemplo de nombre',
+					@Type = 'TV',
+					@Episodes = 0,
+					@Status = 'Airing',
+					@Premiered = '',
+					@Broadcast = '',
+					@Producers = '',
+					@Licensors = '',
+					@Studios = '',
+					@Source = '',
+					@Genres = '',
+					@Duration = '',
+					@Rating = '',
+					@Score = 9,
+					@Ranked = 3500,
+					@Popularity = 12,
+					@Favorites = 12,
+					@Aired_Date = '2026-02-05',
+					@Finished_Date = '2020-08-07'
+					
+SELECT * FROM RegistroErrores
+
 
 /*	
 Implementación de Funciones:
