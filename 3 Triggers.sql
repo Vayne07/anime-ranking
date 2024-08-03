@@ -325,7 +325,7 @@ Hago la prueba eliminando valores de ejemplo y funciona.
 DELETE FROM
 	animerank
 WHERE
-	ID = 2023
+	ID = 2026
 
 SELECT
 	*
