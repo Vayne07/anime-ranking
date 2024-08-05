@@ -44,7 +44,7 @@ SELECT
 	name,
 	popularity,
 	favorites,
-	ranked
+	CONCAT('#', ranked) ranked
 FROM
 	animerank
 ORDER BY
