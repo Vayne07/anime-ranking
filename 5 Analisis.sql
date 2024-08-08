@@ -54,7 +54,6 @@ ORDER BY
 /*
 Los anime con mayor cantidad de episodios, junto a su estado y años de emision.
 */
-
 SELECT
 	name,
 	status,
@@ -69,6 +68,42 @@ ORDER BY
 	episodes DESC
 
 
+
+/*
+Cantidad de animes emitidos por año.
+*/
+SELECT
+	RIGHT(premiered, 4) premiered,
+	COUNT(*) cnt
+FROM
+	animerank
+GROUP BY
+	RIGHT(premiered, 4)
+ORDER BY
+	cnt DESC
+
+
+
+/*
+Dias de emision mas frecuentes.
+*/
+SELECT
+	CASE
+		WHEN CHARINDEX(' ', broadcast) > 0 THEN SUBSTRING(broadcast, 0, CHARINDEX(' ', broadcast) -1)
+		ELSE broadcast
+	END days,
+	COUNT(*) cnt
+FROM
+	animerank
+GROUP BY
+	CASE
+		WHEN CHARINDEX(' ', broadcast) > 0 THEN SUBSTRING(broadcast, 0, CHARINDEX(' ', broadcast) -1)
+		ELSE broadcast
+	END
+HAVING
+	COUNT(*) > 3 
+ORDER BY
+	cnt DESC
 
 
 
