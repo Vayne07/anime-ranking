@@ -107,4 +107,10 @@ ORDER BY
 
 
 
+--
+-- intentar usar cte, joins o algo mas que no estuve usando.
+-- separar generos por coma, fijarse cual genero es el mas comun. 
+WITH CTE_genres AS
+	(SELECT
+
 select * from animerank
