@@ -107,10 +107,52 @@ ORDER BY
 
 
 
---
--- intentar usar cte, joins o algo mas que no estuve usando.
--- separar generos por coma, fijarse cual genero es el mas comun. 
+/*
+Cantidad de anime por genero.
+*/
 WITH CTE_genres AS
-	(SELECT
+	(SELECT 
+        TRIM(value) AS genero
+    FROM 
+        animerank
+    CROSS APPLY 
+        STRING_SPLIT(genres, ','))
 
-select * from animerank
+SELECT 
+    genero,
+    COUNT(*) AS cnt
+FROM 
+    CTE_genres
+GROUP BY 
+    genero
+ORDER BY 
+    cnt DESC
+
+
+
+/*
+Anime del mismo ESTUDIO, que tienen una popularidad similar (diferencia de 10 puntos).
+*/
+SELECT 
+    t1.name AS Anime1, 
+    t2.name AS Anime2, 
+    t1.studios AS Estudio,
+    t1.popularity AS Popularidad1, 
+    t2.popularity AS Popularidad2
+FROM 
+    animerank t1
+JOIN 
+    animerank t2
+	ON t1.id < t2.id
+	AND t1.studios = t2.studios
+	AND ABS(t1.popularity - t2.popularity) <= 10
+ORDER BY 
+    Estudio, Popularidad1, Popularidad2
+
+
+-----------------------------------------
+
+SELECT
+	*
+FROM
+	animerank
